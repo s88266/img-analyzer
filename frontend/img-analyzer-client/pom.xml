@@ -23,6 +23,19 @@
       <version>5.11.0</version>
       <scope>test</scope>
     </dependency>
+     <!--Unirest-->
+    <dependency>
+    <groupId>com.konghq</groupId>
+    <artifactId>unirest-java</artifactId>
+    <version>3.13.10</version>
+</dependency>
+     <!--org.json-->
+<dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20240303</version>
+</dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>

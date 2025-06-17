@@ -22,3 +22,4 @@ async def detect(file: UploadFile = File(...)):
     finally:
         os.remove(temp_path)
     # return {"tags": ["Person", "Hund"]}
+#hey hey
