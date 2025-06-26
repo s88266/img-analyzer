@@ -1,0 +1,11 @@
+timestamp,image,model,label,confidence,x1,y1,x2,y2
+2025-06-25 15:25:15,cat.jpg,yolov8n,cat,0.89,88,21,202,218
+2025-06-25 16:41:19,cat.jpg,yolov8n,cat,0.89,88,21,202,218
+2025-06-25 17:54:36,cat.jpg,yolov8n,cat,0.89,88,21,202,218
+2025-06-25 18:09:24,cat.jpg,yolov8n,cat,0.89,88,21,202,218
+2025-06-25 18:09:38,profil.jpg,yolov8n,person,0.91,0,16,566,565
+2025-06-25 18:13:37,cat.jpg,yolov8n,cat,0.89,88,21,202,218
+2025-06-26 15:10:26,tree.jpeg,yolov8n,giraffe,0.28,908,637,968,714
+2025-06-26 15:14:45,cat.jpg,yolov8n,cat,0.89,88,21,202,218
+2025-06-26 15:15:03,cat.jpg,yolov8n,cat,0.89,88,21,202,218
+2025-06-26 15:15:29,Screenshot 2023-12-21 150117.png,yolov8n,person,0.63,6,29,190,191

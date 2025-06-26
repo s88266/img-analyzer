@@ -13,11 +13,16 @@ import java.util.List;
 
 public class DetectionClient {
 
-    public static List<ImageWithOverlay.Detection> detectObjects(File imageFile) {
+    public static List<ImageWithOverlay.Detection> detectObjects(File imageFile, ModelType model) {
         List<ImageWithOverlay.Detection> detections = new ArrayList<>();
 
         try {
-            HttpResponse<JsonNode> response = Unirest.post("http://localhost:8000/detect")
+
+             String url = model == ModelType.MOBILENET
+                    ? "http://localhost:8000/detect_tf"
+                    : "http://localhost:8000/detect";
+
+            HttpResponse<JsonNode> response = Unirest.post(url)
                     .field("file", imageFile)
                     .asJson();
 
@@ -38,7 +43,7 @@ public class DetectionClient {
                     double width = x2 - x1;
                     double height = y2 - y1;
 
-                    detections.add(new ImageWithOverlay.Detection(x1, y1, width, height, label));
+                    detections.add(new ImageWithOverlay.Detection(x1, y1, width, height, label, confidence));
                 }
             } else {
                 System.err.println("Fehler beim Senden: " + response.getStatusText());
@@ -49,4 +54,5 @@ public class DetectionClient {
 
         return detections;
     }
+
 }

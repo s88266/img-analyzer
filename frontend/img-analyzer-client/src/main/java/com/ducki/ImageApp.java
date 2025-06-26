@@ -14,23 +14,31 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
+import javafx.scene.control.ComboBox;
+
+
 
 public class ImageApp extends Application {
 
-    private VBox resultsBox = new VBox(5); // Für die Objektliste
+    private VBox resultsBox = new VBox(10); // Für die Objektliste
     private StackPane imageContainer = new StackPane(); // Für das Bild mit Overlay
+    
 
     @Override
     public void start(Stage primaryStage) {
+        ComboBox<ModelType> modelSelector = new ComboBox<>();
+        modelSelector.getItems().addAll(ModelType.values());
+        modelSelector.setValue(ModelType.YOLO); // Startwert
+        
         Button reloadButton = new Button("📷 Neues Bild wählen");
         reloadButton.setStyle("-fx-font-size: 14px;");
-        reloadButton.setOnAction(e -> loadImageAndShow(primaryStage));
+        reloadButton.setOnAction(e -> loadImageAndShow(primaryStage, modelSelector.getValue()));
 
         Label title = new Label("Erkannte Objekte:");
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
         resultsBox.getChildren().add(title);
 
-        VBox fullLayout = new VBox(15, reloadButton, resultsBox, imageContainer);
+        VBox fullLayout = new VBox(15,modelSelector, reloadButton, resultsBox, imageContainer);
         fullLayout.setAlignment(Pos.TOP_CENTER);
         fullLayout.setPadding(new Insets(20));
 
@@ -41,11 +49,11 @@ public class ImageApp extends Application {
 
         // Automatisch in den Vollbildmodus wechseln
         primaryStage.setMaximized(true);
-
-        loadImageAndShow(primaryStage); // optional: direktes Laden beim Start
+         // 🟡 Bildauswahl gleich beim Start mit gewähltem Modell starten
+        loadImageAndShow(primaryStage, modelSelector.getValue());
     }
 
-    private void loadImageAndShow(Stage stage) {
+    private void loadImageAndShow(Stage stage, ModelType model) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Bild auswählen");
         fileChooser.getExtensionFilters().addAll(
@@ -64,7 +72,9 @@ public class ImageApp extends Application {
         new Thread(() -> {
             try {
                 Image image = new Image(file.toURI().toString());
-                List<ImageWithOverlay.Detection> detections = DetectionClient.detectObjects(file);
+                 List<ImageWithOverlay.Detection> detections = DetectionClient.detectObjects(file, model);
+
+
                 ImageWithOverlay view = new ImageWithOverlay(image, detections);
 
                 Platform.runLater(() -> {
@@ -95,6 +105,7 @@ public class ImageApp extends Application {
             }
         }).start();
     }
+    
 
     public static void main(String[] args) {
         launch(args);

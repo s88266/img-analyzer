@@ -6,10 +6,24 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import java.util.List;
 
 public class ImageWithOverlay extends StackPane {
+
+    public static class Detection {
+        public String label;
+        public double score;
+        public double[] bbox;
+
+        public Detection(double x, double y, double width, double height, String label, double score) {
+            this.label = label;
+            this.score = score; // Beispielwert
+            this.bbox = new double[] { x, y, width, height };
+        }
+    }
+
     private final ImageView imageView;
     private final Canvas canvas;
 
@@ -37,32 +51,26 @@ public class ImageWithOverlay extends StackPane {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setStroke(Color.RED);
         gc.setLineWidth(2);
-        gc.setFont(javafx.scene.text.Font.font(14));
+        gc.setFont(Font.font("Arial", 14));
         gc.setFill(Color.BLACK);
 
         for (Detection det : detections) {
             if (det.bbox != null && det.bbox.length == 4) {
                 double x = det.bbox[0];
                 double y = det.bbox[1];
-                double width = det.bbox[2] - det.bbox[0];
-                double height = det.bbox[3] - det.bbox[1];
+                double width = det.bbox[2];
+                double height = det.bbox[3];
 
                 gc.strokeRect(x, y, width, height);
-                gc.fillText(det.label + " (" + String.format("%.2f", det.score) + ")", x + 3, y + 15);
+                String text = det.label + " (" + String.format("%.2f", det.score) + ")";
+                gc.setFill(Color.WHITE);
+                gc.fillRect(x + 3, y + 3, text.length() * 7, 18);
+                 // Text darüber
+                gc.setFill(Color.BLACK);
+                gc.fillText(text, x + 5, y + 17);
                 System.out.println("Detection: " + det.label + ", Score: " + det.score);
             }
         }
     }
 
-    public static class Detection {
-        public String label;
-        public double score;
-        public double[] bbox;
-
-        public Detection(double x, double y, double width, double height, String label) {
-            this.label = label;
-            this.score = 0.90; // Beispielwert
-            this.bbox = new double[]{x, y, x + width, y + height};
-        }
-    }
 }
