@@ -49,7 +49,7 @@ public class ImageApp extends Application {
 
         // Automatisch in den Vollbildmodus wechseln
         primaryStage.setMaximized(true);
-         // 🟡 Bildauswahl gleich beim Start mit gewähltem Modell starten
+        // 🟡 Bildauswahl gleich beim Start mit gewähltem Modell starten
         loadImageAndShow(primaryStage, modelSelector.getValue());
     }
 

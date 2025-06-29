@@ -7,6 +7,7 @@ import os
 import csv
 from datetime import datetime
 from detector_tf import detect_objects_tf
+from detector_frcnn import detect_objects_frcnn
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -63,3 +64,17 @@ async def detect_tf(file: UploadFile = File(...)):
     finally:
         os.remove(temp_path)
 
+@app.post("/detect_frcnn")
+async def detect_frcnn(file: UploadFile = File(...)):
+    temp_path = f"temp_frcnn_{file.filename}"
+    with open(temp_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        result, duration = detect_objects_frcnn(temp_path)
+        print("→ FASTER_R_CNN wird verwendet.")
+        print("→ Erkennungen:", result)
+        print("→ Dauer:", duration, "ms")
+        return JSONResponse(content={"detections": result})
+    finally:
+        os.remove(temp_path)

@@ -18,9 +18,11 @@ public class DetectionClient {
 
         try {
 
-             String url = model == ModelType.MOBILENET
-                    ? "http://localhost:8000/detect_tf"
-                    : "http://localhost:8000/detect";
+        String url = switch (model) {
+            case MOBILENET -> "http://localhost:8000/detect_tf";
+            case FASTER_R_CNN -> "http://localhost:8000/detect_frcnn";
+            default -> "http://localhost:8000/detect"; // YOLO Standard
+        };
 
             HttpResponse<JsonNode> response = Unirest.post(url)
                     .field("file", imageFile)
@@ -33,8 +35,20 @@ public class DetectionClient {
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject obj = arr.getJSONObject(i);
                     String label = obj.getString("label");
-                    double confidence = obj.getDouble("confidence");
-                    JSONArray bbox = obj.getJSONArray("bbox");
+
+
+                     // Unterschiedliche Feldnamen je nach Modell
+                    double confidence;
+                    JSONArray bbox;
+
+                    if (model == ModelType.FASTER_R_CNN) {
+                        confidence = obj.getDouble("score");
+                        bbox = obj.getJSONArray("box");
+                    } else {
+                        confidence = obj.getDouble("confidence");
+                        bbox = obj.getJSONArray("bbox");
+                    }
+
                     double x1 = bbox.getDouble(0);
                     double y1 = bbox.getDouble(1);
                     double x2 = bbox.getDouble(2);

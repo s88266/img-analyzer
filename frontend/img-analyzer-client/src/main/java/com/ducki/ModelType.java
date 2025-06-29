@@ -1,5 +1,5 @@
 package com.ducki;
 
 public enum ModelType {
-    YOLO, MOBILENET
+    YOLO, MOBILENET, FASTER_R_CNN
 }

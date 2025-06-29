@@ -17,4 +17,3 @@ def detect_objects(image_path: str) -> list:
                 "bbox": [round(coord, 2) for coord in bbox]
             })
     return detections
-##hey hey

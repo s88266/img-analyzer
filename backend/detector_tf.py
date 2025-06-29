@@ -24,7 +24,7 @@ def detect_objects_tf(image_path: str)-> list:
         result.append({
             "label": label,
             "confidence": float(confidence),
-            "bbox": [0, 0, 0, 0]  # Dummy-Box für Vergleich
+            "bbox": [0, 0, 0, 0] 
         })
 
     return result, duration
