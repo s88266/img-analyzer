@@ -24,7 +24,7 @@ def detect_objects_tf(image_path: str)-> list:
         result.append({
             "label": label,
             "confidence": float(confidence),
-            "bbox": [0, 0, 0, 0] 
+            "bbox": [0, 0, 0, 0]  # MobileNetV2 gibt keine BBox zurück, daher Dummy-Werte
         })
 
     return result, duration

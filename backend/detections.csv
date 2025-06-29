@@ -22,3 +22,11 @@ timestamp,image,model,label,confidence,x1,y1,x2,y2
 2025-06-29 15:02:45,dogs.jpeg,yolov8n,dog,0.36,75,70,126,129
 2025-06-29 15:02:45,dogs.jpeg,yolov8n,dog,0.29,166,33,251,155
 2025-06-29 15:02:45,dogs.jpeg,yolov8n,dog,0.28,32,119,103,153
+2025-06-29 15:35:50,birds.jpg,yolov8n,bird,0.88,279,92,475,403
+2025-06-29 15:35:50,birds.jpg,yolov8n,bird,0.77,153,65,317,407
+2025-06-29 15:35:50,birds.jpg,yolov8n,bird,0.58,34,65,174,411
+2025-06-29 15:35:50,birds.jpg,yolov8n,bird,0.41,43,56,320,409
+2025-06-29 15:44:56,birds.jpg,yolov8n,bird,0.88,279,92,475,403
+2025-06-29 15:44:56,birds.jpg,yolov8n,bird,0.77,153,65,317,407
+2025-06-29 15:44:56,birds.jpg,yolov8n,bird,0.58,34,65,174,411
+2025-06-29 15:44:56,birds.jpg,yolov8n,bird,0.41,43,56,320,409

@@ -1,6 +1,5 @@
 from ultralytics import YOLO
 
-# YOLOv8-Modell laden (vorgefertigt)
 model = YOLO("yolov8n.pt")  # "n" steht für "nano" (klein und schnell)
 
 def detect_objects(image_path: str) -> list:

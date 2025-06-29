@@ -21,6 +21,7 @@ public class DetectionClient {
         String url = switch (model) {
             case MOBILENET -> "http://localhost:8000/detect_tf";
             case FASTER_R_CNN -> "http://localhost:8000/detect_frcnn";
+            case SSD -> "http://localhost:8000/detect_ssd";
             default -> "http://localhost:8000/detect"; // YOLO Standard
         };
 
@@ -41,7 +42,7 @@ public class DetectionClient {
                     double confidence;
                     JSONArray bbox;
 
-                    if (model == ModelType.FASTER_R_CNN) {
+                    if (model == ModelType.SSD || model == ModelType.FASTER_R_CNN) {
                         confidence = obj.getDouble("score");
                         bbox = obj.getJSONArray("box");
                     } else {

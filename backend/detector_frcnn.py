@@ -17,7 +17,7 @@ COCO_INSTANCE_CATEGORY_NAMES = [
     'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'dining table',
     'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone',
     'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock',
-    'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+    'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush', 'car', 'sofa'
 ]
 
 # Modell laden
@@ -38,7 +38,7 @@ def detect_objects_frcnn(image_path: str) -> list:
     for i in range(len(predictions["boxes"])):
         score = predictions["scores"][i].item()
         label_idx = predictions["labels"][i].item()
-        print(f"Detection {i}: label_idx={label_idx}, score={score}")  # Debug print
+        print(f"Detection {i}: label_idx={label_idx}, score={score}")  
         if score >= 0.5:
             label = COCO_INSTANCE_CATEGORY_NAMES[label_idx - 1]
             box = predictions["boxes"][i].tolist()

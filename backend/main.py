@@ -8,6 +8,7 @@ import csv
 from datetime import datetime
 from detector_tf import detect_objects_tf
 from detector_frcnn import detect_objects_frcnn
+from detector_ssd import detect_objects_ssd
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -78,3 +79,14 @@ async def detect_frcnn(file: UploadFile = File(...)):
         return JSONResponse(content={"detections": result})
     finally:
         os.remove(temp_path)
+
+@app.post("/detect_ssd")
+async def detect_ssd(file: UploadFile = File(...)):
+    contents = await file.read()
+    temp_path = f"temp_{file.filename}"
+    with open(temp_path, "wb") as f:
+        f.write(contents)
+
+    result = detect_objects_ssd(temp_path)
+    os.remove(temp_path)
+    return {"detections": result}
