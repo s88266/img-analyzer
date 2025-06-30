@@ -4,7 +4,7 @@ from PIL import Image
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 import time
 
-# COCO-Label-Namen (Index 0 = __background__)
+# COCO-Label-Namen
 COCO_INSTANCE_CATEGORY_NAMES = [
     '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
     'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign',
@@ -20,7 +20,6 @@ COCO_INSTANCE_CATEGORY_NAMES = [
     'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush', 'car', 'sofa'
 ]
 
-# Modell laden
 model = fasterrcnn_resnet50_fpn(pretrained=True)
 model.eval()
 
@@ -31,21 +30,21 @@ def detect_objects_frcnn(image_path: str) -> list:
     image_tensor = transform(image)
     with torch.no_grad():
         predictions = model([image_tensor])[0]
-    
-    duration=(time.time() - start_time) * 1000  # Dauer in ms
+
+    duration = (time.time() - start_time) * 1000  # Dauer in ms
 
     result = []
     for i in range(len(predictions["boxes"])):
         score = predictions["scores"][i].item()
         label_idx = predictions["labels"][i].item()
-        print(f"Detection {i}: label_idx={label_idx}, score={score}")  
+        print(f"Detection {i}: label_idx={label_idx}, score={score}")
         if score >= 0.5:
             label = COCO_INSTANCE_CATEGORY_NAMES[label_idx - 1]
             box = predictions["boxes"][i].tolist()
             result.append({
                 "label": label,
-                "score": round(score, 2),
-                "box": box
+                "confidence": round(score, 2),
+                "bbox": box
             })
 
-    return result,duration
+    return result, duration

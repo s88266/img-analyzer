@@ -2,110 +2,105 @@ package com.ducki;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.layout.VBox;
+
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
-import javafx.scene.control.ComboBox;
-
-
 
 public class ImageApp extends Application {
 
-    private VBox resultsBox = new VBox(10); // Für die Objektliste
-    private StackPane imageContainer = new StackPane(); // Für das Bild mit Overlay
-    
+    private VBox imageList = new VBox(30); // Container für Bilder + Erkennungsergebnisse
 
     @Override
     public void start(Stage primaryStage) {
         ComboBox<ModelType> modelSelector = new ComboBox<>();
         modelSelector.getItems().addAll(ModelType.values());
-        modelSelector.setValue(ModelType.YOLO); // Startwert
-        
-        Button reloadButton = new Button("📷 Neues Bild wählen");
+        modelSelector.setValue(ModelType.YOLO); // Standardmodell
+
+        Button reloadButton = new Button("📷 Bilder auswählen & analysieren");
         reloadButton.setStyle("-fx-font-size: 14px;");
-        reloadButton.setOnAction(e -> loadImageAndShow(primaryStage, modelSelector.getValue()));
+        reloadButton.setOnAction(e -> loadImagesAndShow(primaryStage, modelSelector.getValue()));
 
-        Label title = new Label("Erkannte Objekte:");
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
-        resultsBox.getChildren().add(title);
+        ScrollPane scrollPane = new ScrollPane(imageList);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPadding(new Insets(10));
 
-        VBox fullLayout = new VBox(15,modelSelector, reloadButton, resultsBox, imageContainer);
+        VBox fullLayout = new VBox(15, modelSelector, reloadButton, scrollPane);
         fullLayout.setAlignment(Pos.TOP_CENTER);
         fullLayout.setPadding(new Insets(20));
 
-        Scene scene = new Scene(fullLayout, 600, 600);
+        Scene scene = new Scene(fullLayout, 1000, 800);
         primaryStage.setTitle("Image Analyzer");
         primaryStage.setScene(scene);
-        primaryStage.show();
-
-        // Automatisch in den Vollbildmodus wechseln
         primaryStage.setMaximized(true);
-        // 🟡 Bildauswahl gleich beim Start mit gewähltem Modell starten
-        loadImageAndShow(primaryStage, modelSelector.getValue());
+        primaryStage.show();
     }
 
-    private void loadImageAndShow(Stage stage, ModelType model) {
+    private void loadImagesAndShow(Stage stage, ModelType model) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Bild auswählen");
+        fileChooser.setTitle("Mehrere Bilder auswählen");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Bilder", "*.png", "*.jpg", "*.jpeg", "*.bmp")
-        );
+                new FileChooser.ExtensionFilter("Bilder", "*.png", "*.jpg", "*.jpeg", "*.bmp"));
+        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(stage);
 
-        File file = fileChooser.showOpenDialog(stage);
-        if (file == null) {
-            System.out.println("Kein Bild ausgewählt.");
+        if (selectedFiles == null || selectedFiles.isEmpty()) {
+            System.out.println("Keine Bilder ausgewählt.");
             return;
         }
 
-        imageContainer.getChildren().setAll(new Label("Bild wird analysiert..."));
-        resultsBox.getChildren().setAll(new Label("Erkannte Objekte:"));
+        imageList.getChildren().clear();
 
-        new Thread(() -> {
-            try {
-                Image image = new Image(file.toURI().toString());
-                 List<ImageWithOverlay.Detection> detections = DetectionClient.detectObjects(file, model);
+        for (File file : selectedFiles) {
+            VBox imageBlock = new VBox(5);
+            imageBlock.setPadding(new Insets(10));
+            imageBlock.setAlignment(Pos.CENTER_LEFT);
+            imageBlock.getChildren().add(new Label("Analysiere: " + file.getName()));
 
+            Image fxImage = new Image(file.toURI().toString());
 
-                ImageWithOverlay view = new ImageWithOverlay(image, detections);
+            new Thread(() -> {
+                try {
+                    List<ImageWithOverlay.Detection> detections = DetectionClient.detectObjects(file, model);
+                    ImageWithOverlay imageView = new ImageWithOverlay(fxImage, detections);
 
-                Platform.runLater(() -> {
-                    resultsBox.getChildren().clear();
-                    Label title = new Label("Erkannte Objekte:");
-                    title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
-                    resultsBox.getChildren().add(title);
+                    Platform.runLater(() -> {
+                        imageBlock.getChildren().clear();
+                        imageBlock.getChildren().add(imageView);
 
-                    if (detections.isEmpty()) {
-                        resultsBox.getChildren().add(new Label("Keine Objekte erkannt."));
-                    } else {
-                        for (ImageWithOverlay.Detection det : detections) {
-                            Label entry = new Label("- " + det.label + " (Score: " + String.format("%.2f", det.score) + ")");
-                            entry.setStyle("-fx-font-size: 14px;");
-                            resultsBox.getChildren().add(entry);
+                        if (detections.isEmpty()) {
+                            imageBlock.getChildren().add(new Label("→ Keine Objekte erkannt"));
+                        } else {
+                            for (ImageWithOverlay.Detection det : detections) {
+                                imageBlock.getChildren().add(new Label("- " + det.label + " (Score: " + String.format("%.2f", det.score) + ")"));
+                            }
                         }
-                    }
 
-                    imageContainer.getChildren().setAll(view);
-                });
+                        imageList.getChildren().add(imageBlock);
+                    });
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                Platform.runLater(() -> {
-                    resultsBox.getChildren().setAll(new Label("Fehler bei der Analyse."));
-                    imageContainer.getChildren().clear();
-                });
-            }
-        }).start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Platform.runLater(() -> {
+                        imageBlock.getChildren().add(new Label("❌ Fehler bei der Analyse"));
+                        imageList.getChildren().add(imageBlock);
+                    });
+                }
+            }).start();
+        }
     }
-    
 
     public static void main(String[] args) {
         launch(args);
