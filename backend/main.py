@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI, Form, UploadFile, File
+from fastapi import FastAPI, Form, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -14,6 +14,9 @@ from detector_tf import detect_objects_tf
 from detector_frcnn import detect_objects_frcnn
 from detector_ssd import detect_objects_ssd
 from database import insert_detection, create_table
+
+from mongo_utils import insert_detection_mongo
+from mongo_queries import find_detections
 
 # Datenbanktabelle erstellen
 create_table()
@@ -141,7 +144,14 @@ async def detect_batch(
                 model=model,
                 timestamp=timestamp
             )
-
+        # MongoDB-Logging
+        insert_detection_mongo(
+            filename=file.filename,
+            model=model,
+            detections=detections,
+            timestamp=timestamp
+        )
+        # CSV-Logging
         log_detections(file.filename, model, detections)
 
         results.append({
@@ -153,3 +163,11 @@ async def detect_batch(
         os.remove(temp_filename)
 
     return JSONResponse(content={"batch_results": results})
+
+@app.get("/search")
+async def search_detections(
+    label: str = Query(None),
+    model: str = Query(None)
+):
+    results = find_detections(label, model)
+    return JSONResponse(content={"results": results})
