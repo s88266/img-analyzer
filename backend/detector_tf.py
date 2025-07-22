@@ -7,6 +7,7 @@ import time
 model = MobileNetV2(weights='imagenet')
 
 def detect_objects_tf(image_path: str)-> list:
+    print("▶ MobileNetV2 wird verwendet")
     start_time = time.time()
     
     img = keras_image.load_img(image_path, target_size=(224, 224))
@@ -26,5 +27,5 @@ def detect_objects_tf(image_path: str)-> list:
             "confidence": float(confidence),
             "bbox": [0, 0, 0, 0]  # MobileNetV2 gibt keine BBox zurück, daher Dummy-Werte
         })
-
+    print(f"✅ MobileNetV2 fertig in {round(duration,2)}ms, {len(result)} Objekte gefunden")
     return result, duration

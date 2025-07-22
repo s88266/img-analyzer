@@ -24,6 +24,7 @@ CLASSES = [
 ]
 
 def detect_objects_ssd(image_path):
+    print("▶ SSD wird verwendet")
     start_time = time.time()
     image = Image.open(image_path).convert("RGB")
     image_tensor = F.to_tensor(image).unsqueeze(0).to(device)
@@ -31,16 +32,22 @@ def detect_objects_ssd(image_path):
     with torch.no_grad():
         predictions = model(image_tensor)[0]
 
-    duration = (time.time() - start_time) * 1000  # Dauer in ms
+    duration = (time.time() - start_time) * 1000  # ms
 
     result = []
     for box, label_idx, score in zip(predictions["boxes"], predictions["labels"], predictions["scores"]):
         if score.item() > 0.5:
             box = box.tolist()
-            label = CLASSES[label_idx - 1]  # Index 0 is background
+            idx = int(label_idx - 1)
+            if 0 <= idx < len(CLASSES):
+                label = CLASSES[idx]
+            else:
+                label = f"unknown_{idx}"
             result.append({
                 "bbox": box,
                 "label": label,
                 "confidence": float(score)
             })
+
+    print(f"✅ SSD fertig in {round(duration,2)}ms, {len(result)} Objekte gefunden")
     return result, duration

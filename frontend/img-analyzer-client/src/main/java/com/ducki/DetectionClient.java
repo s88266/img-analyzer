@@ -7,53 +7,79 @@ import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DetectionClient {
 
-    public static List<ImageWithOverlay.Detection> detectObjects(File imageFile, ModelType model) {
-        List<ImageWithOverlay.Detection> detections = new ArrayList<>();
+    public static Map<String, Map<String, List<ImageWithOverlay.Detection>>> detectBatchAll(List<File> imageFiles) {
+        Map<String, Map<String, List<ImageWithOverlay.Detection>>> resultMap = new HashMap<>();
 
         try {
-            String url = switch (model) {
-                case MOBILENET -> "http://localhost:8000/detect_tf";
-                case FASTER_R_CNN -> "http://localhost:8000/detect_frcnn";
-                case SSD -> "http://localhost:8000/detect_ssd";
-                default -> "http://localhost:8000/detect"; // YOLO
-            };
+            // baue Multipart korrekt mit mehreren "files"-Feldern
+            var multipart = Unirest.post("http://localhost:8000/detect_batch_all")
+                    .field("files", imageFiles.get(0));
+            for (int i = 1; i < imageFiles.size(); i++) {
+                multipart.field("files", imageFiles.get(i));
+            }
 
-            HttpResponse<JsonNode> response = Unirest.post(url)
-                    .field("file", imageFile)
-                    .asJson();
+            HttpResponse<JsonNode> response = multipart.asJson();
+
+            // falls es fehler gibt , damit den batchresult sieht
+            // System.out.println("SERVER-RESPONSE:");
+            // System.out.println(response.getBody().toPrettyString());
 
             if (response.getStatus() == 200) {
-                JSONObject responseObject = response.getBody().getObject();
-                JSONArray arr = responseObject.getJSONArray("detections");
+                JSONObject jsonObject = response.getBody().getObject();
+                JSONArray batchResults = jsonObject.getJSONArray("batch_results");
 
-                for (int i = 0; i < arr.length(); i++) {
-                    JSONObject obj = arr.getJSONObject(i);
-                    String label = obj.getString("label");
-                    double confidence = obj.getDouble("confidence");
+                for (int i = 0; i < batchResults.length(); i++) {
+                    JSONObject fileResult = batchResults.getJSONObject(i);
+                    String filename = fileResult.getString("filename");
+                    JSONObject detectionsByModel = fileResult.getJSONObject("detections");
 
-                    JSONArray bbox = obj.getJSONArray("bbox"); // Einheitlich bei allen Modellen
-                    double x1 = bbox.getDouble(0);
-                    double y1 = bbox.getDouble(1);
-                    double x2 = bbox.getDouble(2);
-                    double y2 = bbox.getDouble(3);
+                    Map<String, List<ImageWithOverlay.Detection>> modelDetections = new HashMap<>();
 
-                    double width = x2 - x1;
-                    double height = y2 - y1;
+                    for (Iterator<String> it = detectionsByModel.keys(); it.hasNext();) {
+                        String modelName = it.next();
+                        JSONArray detectionsArray = detectionsByModel.getJSONArray(modelName);
 
-                    detections.add(new ImageWithOverlay.Detection(x1, y1, width, height, label, confidence));
+                        List<ImageWithOverlay.Detection> detectionsList = new ArrayList<>();
+
+                        for (int j = 0; j < detectionsArray.length(); j++) {
+                            JSONObject obj = detectionsArray.getJSONObject(j);
+                            JSONArray bbox = obj.getJSONArray("bbox");
+                            double x1 = bbox.getDouble(0);
+                            double y1 = bbox.getDouble(1);
+                            double x2 = bbox.getDouble(2);
+                            double y2 = bbox.getDouble(3);
+
+                            double width = x2 - x1;
+                            double height = y2 - y1;
+
+                            detectionsList.add(new ImageWithOverlay.Detection(
+                                    x1, y1, width, height,
+                                    obj.getString("label"),
+                                    obj.getDouble("confidence")
+                            ));
+                        }
+
+                        modelDetections.put(modelName, detectionsList);
+                    }
+
+                    resultMap.put(filename, modelDetections);
                 }
+
+                System.out.println("=== Ergebnis-Keys ===");
+                resultMap.keySet().forEach(System.out::println);
+                System.out.println("======================");
             } else {
-                System.err.println("Fehler beim Senden: " + response.getStatusText());
+                System.err.println("Fehler beim Batch-Request: " + response.getStatusText());
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return detections;
+        return resultMap;
     }
 }

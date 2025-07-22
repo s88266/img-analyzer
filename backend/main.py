@@ -24,14 +24,14 @@ create_table()
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-def log_detections(image_filename: str, model_name: str, detections: list):
+def log_detections(image_filename: str, model_name: str, detections: list, duration: float):
     log_file = "detections.csv"
     file_exists = os.path.isfile(log_file)
 
     with open(log_file, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(["timestamp", "image", "model", "label", "confidence", "x1", "y1", "x2", "y2"])
+            writer.writerow(["timestamp", "image", "model", "label", "confidence", "x1", "y1", "x2", "y2", "duration_ms"])
         for det in detections:
             writer.writerow([
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -42,7 +42,8 @@ def log_detections(image_filename: str, model_name: str, detections: list):
                 round(det["bbox"][0]),
                 round(det["bbox"][1]),
                 round(det["bbox"][2]),
-                round(det["bbox"][3])
+                round(det["bbox"][3]),
+                round(duration, 2)
             ])
 
 @app.post("/detect")
@@ -171,3 +172,50 @@ async def search_detections(
 ):
     results = find_detections(label, model)
     return JSONResponse(content={"results": results})
+
+# Batch-Detection für alle Modelle
+@app.post("/detect_batch_all")
+async def detect_batch_all(files: List[UploadFile] = File(...)):
+    results = []
+    timestamp = datetime.now().isoformat()
+
+    for file in files:
+        # nur Dateiname ohne Pfad
+        clean_filename = os.path.basename(file.filename)
+
+        temp_filename = f"temp_{uuid.uuid4().hex}_{clean_filename}"
+        with open(temp_filename, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        file_results = {
+            "filename": clean_filename,
+            "timestamp": timestamp,
+            "detections": {}
+        }
+
+        # YOLO
+        yolo_detections, yolo_duration = detect_yolo(temp_filename)
+        log_detections(clean_filename, "yolov8n", yolo_detections, yolo_duration)
+        file_results["detections"]["yolo"] = yolo_detections
+
+        # MobileNetV2
+        mobilenet_detections, mobilenet_duration = detect_objects_tf(temp_filename)
+        log_detections(clean_filename, "mobilenetv2", mobilenet_detections, mobilenet_duration)
+        file_results["detections"]["mobilenet"] = mobilenet_detections
+
+        # Faster R-CNN
+        frcnn_detections, frcnn_duration = detect_objects_frcnn(temp_filename)
+        log_detections(clean_filename, "faster_r_cnn", frcnn_detections, frcnn_duration)
+        file_results["detections"]["frcnn"] = frcnn_detections
+
+        # SSD
+        ssd_detections, ssd_duration = detect_objects_ssd(temp_filename)
+        log_detections(clean_filename, "ssd", ssd_detections, ssd_duration)
+        file_results["detections"]["ssd"] = ssd_detections
+
+        results.append(file_results)
+
+        os.remove(temp_filename)
+
+    return JSONResponse(content={"batch_results": results})
+
