@@ -180,9 +180,7 @@ async def detect_batch_all(files: List[UploadFile] = File(...)):
     timestamp = datetime.now().isoformat()
 
     for file in files:
-        # nur Dateiname ohne Pfad
         clean_filename = os.path.basename(file.filename)
-
         temp_filename = f"temp_{uuid.uuid4().hex}_{clean_filename}"
         with open(temp_filename, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -196,26 +194,30 @@ async def detect_batch_all(files: List[UploadFile] = File(...)):
         # YOLO
         yolo_detections, yolo_duration = detect_yolo(temp_filename)
         log_detections(clean_filename, "yolov8n", yolo_detections, yolo_duration)
+        insert_detection_mongo(clean_filename, "yolov8n", yolo_detections, timestamp)
         file_results["detections"]["yolo"] = yolo_detections
 
         # MobileNetV2
         mobilenet_detections, mobilenet_duration = detect_objects_tf(temp_filename)
         log_detections(clean_filename, "mobilenetv2", mobilenet_detections, mobilenet_duration)
+        insert_detection_mongo(clean_filename, "mobilenetv2", mobilenet_detections, timestamp)
         file_results["detections"]["mobilenet"] = mobilenet_detections
 
         # Faster R-CNN
         frcnn_detections, frcnn_duration = detect_objects_frcnn(temp_filename)
         log_detections(clean_filename, "faster_r_cnn", frcnn_detections, frcnn_duration)
+        insert_detection_mongo(clean_filename, "faster_r_cnn", frcnn_detections, timestamp)
         file_results["detections"]["frcnn"] = frcnn_detections
 
         # SSD
         ssd_detections, ssd_duration = detect_objects_ssd(temp_filename)
         log_detections(clean_filename, "ssd", ssd_detections, ssd_duration)
+        insert_detection_mongo(clean_filename, "ssd", ssd_detections, timestamp)
         file_results["detections"]["ssd"] = ssd_detections
 
         results.append(file_results)
-
         os.remove(temp_filename)
 
     return JSONResponse(content={"batch_results": results})
+
 

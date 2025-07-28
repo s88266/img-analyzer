@@ -38,7 +38,7 @@ def detect_objects_ssd(image_path):
     for box, label_idx, score in zip(predictions["boxes"], predictions["labels"], predictions["scores"]):
         if score.item() > 0.5:
             box = box.tolist()
-            idx = int(label_idx - 1)
+            idx = int(label_idx - 1)# ohne minus eins gibt es ein offset von eins und zeigt statt hund eine katze
             if 0 <= idx < len(CLASSES):
                 label = CLASSES[idx]
             else:
