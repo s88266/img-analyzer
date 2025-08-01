@@ -46,6 +46,17 @@ def log_detections(image_filename: str, model_name: str, detections: list, durat
                 round(duration, 2)
             ])
 
+def log_to_sqlite(filename: str, model: str, detections: list, timestamp: str):
+    for det in detections:
+        insert_detection(
+            filename=filename,
+            label=det["label"],
+            confidence=det["confidence"],
+            bbox=det["bbox"],
+            model=model,
+            timestamp=timestamp
+        )
+
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
     temp_path = f"temp_{file.filename}"
@@ -195,24 +206,28 @@ async def detect_batch_all(files: List[UploadFile] = File(...)):
         yolo_detections, yolo_duration = detect_yolo(temp_filename)
         log_detections(clean_filename, "yolov8n", yolo_detections, yolo_duration)
         insert_detection_mongo(clean_filename, "yolov8n", yolo_detections, timestamp)
+        log_to_sqlite(clean_filename, "yolov8n", yolo_detections, timestamp)
         file_results["detections"]["yolo"] = yolo_detections
 
         # MobileNetV2
         mobilenet_detections, mobilenet_duration = detect_objects_tf(temp_filename)
         log_detections(clean_filename, "mobilenetv2", mobilenet_detections, mobilenet_duration)
         insert_detection_mongo(clean_filename, "mobilenetv2", mobilenet_detections, timestamp)
+        log_to_sqlite(clean_filename, "mobilenetv2", mobilenet_detections, timestamp)
         file_results["detections"]["mobilenet"] = mobilenet_detections
 
         # Faster R-CNN
         frcnn_detections, frcnn_duration = detect_objects_frcnn(temp_filename)
         log_detections(clean_filename, "faster_r_cnn", frcnn_detections, frcnn_duration)
         insert_detection_mongo(clean_filename, "faster_r_cnn", frcnn_detections, timestamp)
+        log_to_sqlite(clean_filename, "faster_r_cnn", frcnn_detections, timestamp)
         file_results["detections"]["frcnn"] = frcnn_detections
 
         # SSD
         ssd_detections, ssd_duration = detect_objects_ssd(temp_filename)
         log_detections(clean_filename, "ssd", ssd_detections, ssd_duration)
         insert_detection_mongo(clean_filename, "ssd", ssd_detections, timestamp)
+        log_to_sqlite(clean_filename, "ssd", ssd_detections, timestamp)
         file_results["detections"]["ssd"] = ssd_detections
 
         results.append(file_results)
