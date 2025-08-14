@@ -21,7 +21,8 @@ COCO_INSTANCE_CATEGORY_NAMES = [
 
 model = fasterrcnn_resnet50_fpn(pretrained=True)
 model.eval()
-
+# Load the model and set it to evaluation mode
+# Ensure you have the model downloaded and available in your environment
 def detect_objects_frcnn(image_path: str):
     print("▶ Faster R-CNN wird verwendet")
     start_time = time.time()

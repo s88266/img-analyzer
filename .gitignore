@@ -1,22 +1,45 @@
 # --- Python / venv ---
 venv/
+.venv/
 __pycache__/
 *.py[cod]
 *.pyd
 *.so
+*.dll
 
 # --- Modelle / große Binärdateien ---
 *.pt
+*.pth
 *.onnx
+*.h5
 *.zip
 *.tar
+*.tar.gz
+*.rar
 
-# --- Java / Maven ---
+# --- Daten / Cache ---
+*.log
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+*.npy
+*.npz
+datasets/
+checkpoints/
+runs/
+
+# --- Java / Maven / Gradle ---
 frontend/**/target/
+frontend/**/build/
 *.class
+*.jar
+*.war
+*.ear
 
 # --- IDE & OS-Dateien ---
 .vscode/
 .idea/
+*.iml
 .DS_Store
 Thumbs.db

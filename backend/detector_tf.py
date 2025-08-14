@@ -5,7 +5,7 @@ from keras.preprocessing import image as keras_image
 import time
 
 model = MobileNetV2(weights='imagenet')
-
+# Load the MobileNetV2 model with pre-trained weights
 def detect_objects_tf(image_path: str)-> list:
     print("▶ MobileNetV2 wird verwendet")
     start_time = time.time()

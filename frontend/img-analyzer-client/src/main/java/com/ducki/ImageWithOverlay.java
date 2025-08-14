@@ -16,7 +16,7 @@ public class ImageWithOverlay extends StackPane {
         public String label;
         public double score;
         public double[] bbox;
-
+        // Bounding box format: [x, y, width, height]
         public Detection(double x, double y, double width, double height, String label, double score) {
             this.label = label;
             this.score = score;
@@ -26,7 +26,12 @@ public class ImageWithOverlay extends StackPane {
 
     private final ImageView imageView;
     private final Canvas canvas;
-
+    /**
+     * Constructs an ImageWithOverlay instance.
+     *
+     * @param image The image to be displayed.
+     * @param detections A list of detections to overlay on the image.
+     */
     public ImageWithOverlay(Image image, List<Detection> detections) {
         this.imageView = new ImageView(image);
         this.imageView.setPreserveRatio(true);
@@ -47,6 +52,11 @@ public class ImageWithOverlay extends StackPane {
         drawDetections(detections);
     }
 
+    /**
+     * Updates the image displayed in this ImageWithOverlay instance.
+     *
+     * @param image The new image to display.
+     */
     private void drawDetections(List<Detection> detections) {
         if (detections == null || detections.isEmpty()) return;
 
@@ -60,7 +70,7 @@ public class ImageWithOverlay extends StackPane {
         };
 
         int colorIndex = 0;
-
+        // Iterate through each detection and draw the bounding box and label
         for (Detection det : detections) {
             if (det.bbox != null && det.bbox.length == 4) {
                 double x = det.bbox[0];

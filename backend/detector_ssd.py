@@ -22,7 +22,8 @@ CLASSES = [
     'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock',
     'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush', 'car', 'sofa'
 ]
-
+# Detect objects using SSD model
+# This function takes an image path, processes the image, and returns detected objects with their bounding boxes, labels, and confidence scores.
 def detect_objects_ssd(image_path):
     print("▶ SSD wird verwendet")
     start_time = time.time()

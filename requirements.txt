@@ -1,0 +1,9 @@
+fastapi==0.116.1
+keras==3.7.0
+numpy==2.3.2
+Pillow==11.3.0
+pymongo==4.14.0
+tensorflow==2.18.0
+torch==2.8.0
+torchvision==0.23.0
+ultralytics==8.3.179

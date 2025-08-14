@@ -20,7 +20,13 @@ import java.util.Map;
 public class ImageApp extends Application {
 
     private VBox imageList = new VBox(30);
-
+    
+    /**
+     * Main entry point for the JavaFX application.
+     * Sets up the UI and handles image loading and detection.
+     *
+     * @param primaryStage The primary stage for this application.
+     */
     @Override
     public void start(Stage primaryStage) {
         Button reloadButton = new Button("📷 Bilder auswählen & analysieren (alle Modelle)");
@@ -42,6 +48,11 @@ public class ImageApp extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Opens a file chooser to select multiple images and displays them with detection overlays.
+     *
+     * @param stage The primary stage for the application.
+     */
     private void loadImagesAndShow(Stage stage) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Mehrere Bilder auswählen");
@@ -55,12 +66,12 @@ public class ImageApp extends Application {
         }
 
         imageList.getChildren().clear();
-
+        // Start a new thread to handle the detection process
         new Thread(() -> {
             try {
                 Map<String, Map<String, List<ImageWithOverlay.Detection>>> results =
                         DetectionClient.detectBatchAll(selectedFiles);
-
+                // Process the results and update the UI on the JavaFX Application Thread
                 Platform.runLater(() -> {
                     for (File file : selectedFiles) {
                         String fileName = file.getName();
