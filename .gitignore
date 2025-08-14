@@ -29,6 +29,10 @@ datasets/
 checkpoints/
 runs/
 
+# Ausnahmen – diese Dateien trotzdem tracken:
+!backend/detections.csv
+!backend/detections.db
+
 # --- Java / Maven / Gradle ---
 frontend/**/target/
 frontend/**/build/
