@@ -1,7 +1,11 @@
 # KI-gestützte Bildanalyse – Bachelorarbeit Nguyen Duc Dai
 
 Dieses Projekt implementiert einen Prototyp zur **KI-gestützten Objekterkennung** mit einem **Python-FastAPI-Backend** und einer **JavaFX-Frontend-Anwendung**.  
-Unterstützte Modelle: **YOLOv8n**, **Faster R-CNN**, **SSD** und **MobileNetV2**.
+Unterstützte Modelle:
+- **YOLOv8n**
+- **Faster R-CNN**
+- **SSD300-VGG16**
+- **MobileNetV2**
 
 ---
 
@@ -11,43 +15,84 @@ Unterstützte Modelle: **YOLOv8n**, **Faster R-CNN**, **SSD** und **MobileNetV2*
 - Python **3.10+**
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [Uvicorn](https://www.uvicorn.org/)
-- PyTorch
-- TensorFlow/Keras
+- PyTorch & TorchVision
+- TensorFlow / Keras
 - Ultralytics YOLOv8
+- Pillow
+- PyMongo (optional, für MongoDB-Funktionen)
 - MongoDB (lokal oder remote, falls benötigt)
 
-Backend-Abhängigkeiten installieren:
-bash
-pip install fastapi uvicorn torch torchvision torchaudio tensorflow keras ultralytics pillow pymongo
-Frontend (Java)
-Java 17+
+**Installation der Abhängigkeiten:**
+```bash
+pip install -r requirements.txt
+```
 
-Apache Maven
-🚀 Startanleitung
-1. Backend starten
-In das Backend-Verzeichnis wechseln:
+---
+
+### Frontend (Java)
+- Java **17+**
+- Apache Maven oder Gradle
+- JavaFX-Unterstützung (z. B. über Maven-Plugin)
+
+---
+
+## 🚀 Startanleitung
+Entweder über die run-all.bat starten oder:
+
+### 1. Backend starten
+```bash
 cd backend
-Uvicorn-Server starten:
 uvicorn main:app --reload
-Das Backend läuft nun standardmäßig unter http://127.0.0.1:8000.
+```
+Das Backend läuft standardmäßig unter [http://127.0.0.1:8000](http://127.0.0.1:8000).  
+API-Dokumentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-⚙️ Funktionsweise
-Bild hochladen → wird an das Backend gesendet.
+---
 
-Backend führt Erkennung mit YOLOv8n, Faster R-CNN, SSD oder MobileNetV2 gleichzeitig durch.
+### 2. Frontend starten
+```bash
+cd frontend
+cd img-analyzer-client
+mvn --% exec:java -Dexec.mainClass=com.ducki.App
+```
+- Projekt in IntelliJ IDEA oder Eclipse importieren.
+- `App.java` als JavaFX-Anwendung starten.
+- Verbindung zum Backend muss aktiv sein (`http://localhost:8000`).
 
-Ergebnisse → Bounding Boxes + Labels werden im Frontend angezeigt und in CSV/SQLite/MongoDB gespeichert.
+---
 
-📂 Projektstruktur
-.vscode/                     # VS Code Einstellungen
-backend/                     # Python-FastAPI Backend
-frontend/img-analyzer-client # JavaFX-Frontend
-run-all.bat                  # Optionaler Batch-Start
-.gitignore                   # Git-Ignore Datei
+## ⚙️ Funktionsweise
+1. **Upload**: Bilder werden im Frontend ausgewählt und ans Backend gesendet.
+2. **Analyse**: Das Backend führt die Erkennung mit allen vier Modellen durch.
+3. **Speicherung**: Ergebnisse (Labels, Bounding Boxes, Confidence, Laufzeit) werden in  
+   - `detections.csv`  
+   - `detections.db` (SQLite)  
+   - optional MongoDB gespeichert.
+4. **Anzeige**: Frontend zeigt Ergebnisse als Tabelle und mit Bounding-Box-Overlay im Bild.
 
-🛠 Hinweise
-YOLOv8n und andere Modelle werden beim ersten Start automatisch heruntergeladen (Internetverbindung erforderlich).
+---
 
-Für MongoDB-Funktionen muss eine lokale oder Remote-Instanz verfügbar sein.
+## 📂 Projektstruktur
+```
+backend/                 # Python FastAPI Backend
+frontend/                # JavaFX Frontend
+requirements.txt         # Python-Abhängigkeiten
+README.md                # Projektdokumentation
+.gitignore               # Ausschlussregeln für Git
+detections.csv           # Ergebnis-Log (CSV)
+detections.db            # Ergebnis-Log (SQLite)
+```
 
-Große Testbilder/Datasets sind aus Platzgründen nicht enthalten.
+---
+
+## 🛠 Hinweise
+- Modelle (YOLOv8n, Faster R-CNN, SSD, MobileNetV2) werden beim ersten Start automatisch heruntergeladen.
+- Für MongoDB-Funktionen muss eine lokale oder Remote-Instanz verfügbar sein.
+- Große Testbilder und Datasets sind **nicht** enthalten.
+
+---
+
+## 📄 Lizenz
+Projekt im Rahmen der Bachelorarbeit im Studiengang Medieninformatik  
+Hochschule für Technik und Wirtschaft Berlin  
+**Autor:** Nguyen Duc Dai – Matrikelnummer: S932816
